@@ -44,7 +44,8 @@ orbit_T = Orbit(a_T, e_T, M_S)
 # Orbite de Mars
 a_M = 227.92e9  # m
 e_M = 0.0934
-orbit_M = Orbit(a_M, e_M, M_S)
+M_M = 6.39e23  # masse de Mars en kg
+orbit_M = Orbit(a_M, e_M, M_M)
 
 # Orbite de transfert
 a_transfert = (a_T + a_M)/2
@@ -64,19 +65,34 @@ while t < T_T:
         windows.append((t_transfert_start, t_transfert_end))
     t += T_T/10
 
-    
 # Affichage des trajectoires et des fenêtres de tir
 import matplotlib.pyplot as plt
 
-positions_T = orbit_T.integrate(0, orbit_T.T, orbit_T.T/1000)
-positions_M = orbit_M.integrate(0, orbit_M.T, orbit_M.T/1000)
-positions_transfert = orbit_transfert.integrate(0, orbit_transfert.T, orbit_transfert.T/1000)
+# Paramètres des trajectoires
+num_trajectories = 5
+initial_speeds = [25000, 30000, 35000, 40000, 45000]  # en m/s
+initial_angles = [0, math.pi/6, math.pi/4, math.pi/3, 2*math.pi/3]
 
-plt.plot([x for x,y in positions_T], [y for x,y in positions_T], label='Terre')
-plt.plot([x for x,y in positions_M], [y for x,y in positions_M], label='Mars')
-plt.plot([x for x,y in positions_transfert], [y for x,y in positions_transfert], label='Transfert')
-for t_start, t_end in windows:
-    plt.axvspan(t_start, t_end, alpha=0.2, color='gray')
-plt.legend()
-plt.show()
+import matplotlib.pyplot as plt
 
+for i in range(num_trajectories):
+    fig, ax = plt.subplots()
+    positions_T = orbit_T.integrate(0, orbit_T.T, orbit_T.T/1000)
+    positions_M = orbit_M.integrate(0, orbit_M.T, orbit_M.T/1000)
+    positions_transfert = orbit_transfert.integrate(0, orbit_transfert.T, orbit_transfert.T/1000)
+
+    ax.plot([x for x,y in positions_T], [y for x,y in positions_T], label='Terre')
+    ax.plot([x for x,y in positions_M], [y for x,y in positions_M], label='Mars')
+    ax.plot([x for x,y in positions_transfert], [y for x,y in positions_transfert], label='Transfert')
+    for t_start, t_end in windows:
+        ax.axvspan(t_start, t_end, alpha=0.2, color='gray')
+
+    # Paramètres de la trajectoire spécifique
+    v0 = initial_speeds[i]
+    theta = initial_angles[i]
+    x0 = a_T*(math.cos(theta) - e_T)
+    y0 = a_T*math.sqrt(1 - e_T**2)*math.sin(theta)
+    ax.scatter(x0, y0, label=f'Trajectoire {i+1}', marker='x')
+    
+    ax.legend()
+    plt.show()
